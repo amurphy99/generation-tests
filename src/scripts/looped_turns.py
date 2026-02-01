@@ -33,8 +33,7 @@ MODEL = "phi3.5-mini"
 # ================================================================================
 class ConversationResponse(BaseModel):
     # Analyze the user's message
-    user_intent: Literal["greeting", "complaint", "storytelling", "question", "farewell"]
-    thought: str = Field(..., description="Brief internal reasoning about the user's intent and how to reply.")
+    thought: str = Field(..., description="Brief internal reasoning about how the conversation is going and how to continue the conversation with your reply.")
 
     # Do this before the message, so it decides the state and then drafts the response to say with that in mind
     conversation_state: Literal["start_conversation", "initiate_smalltalk", "explore_user_interests", "initiate_memory_activity", "discuss_memory_activity_topic"]
@@ -54,11 +53,11 @@ GUIDELINES:
 5. SAFETY: Do NOT give medical advice. The user CANNOT see your internal JSON or code.
 
 CONVERSATION_STATE LOGIC:
-- "start_conversation": Used at the beginning of interaction, when there is no previous chat history with the user.
-- "initiate_smalltalk": Comes after the initial introduction with the user where the user shares their name.
-- "explore_user_interests": Comes after the "initiate_smalltalk" state when the user naturally shares something they are interested in.
-- "initiate_memory_activity": After exploring the user's personal interest, natually transition toward starting a memory activity where you discuss a memorable event from the user's past.
-- "discuss_memory_activity_topic": After the user selects a particular topic for the memory activity, start discuss the topic with the user.
+- "start_conversation": The very first greeting.
+- "initiate_smalltalk": Asking general questions (How are you? What do you like?).
+- "explore_user_interests": When the user mentions ANY interest (gardening, family, weather), move here.
+- "initiate_memory_activity": After exploring the user's interest, transition toward starting a memory activity where you discuss a related event/aspect from the user's past.
+- "discuss_memory_activity_topic": Discussing the details of that memory.
 
 OUTPUT FORMAT:
 Respond ONLY with a valid JSON object.
@@ -68,7 +67,6 @@ Respond ONLY with a valid JSON object.
 def print_robot_turn(duration, user_message, response):
     print(f"{CYAN} --- ROBOT RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
     print(f"{YELLOW} User:        {user_message}")
-    print(f"{GREEN} Intent:     {RESET} {response.user_intent}")
     print(f"{GREEN} Thought:    {RESET} {response.thought}")
     print(f"{GREEN} State:      {RESET} {response.conversation_state}")
     print(f"{GREEN} Message:    {RESET} {response.message}")
@@ -85,19 +83,18 @@ class UserConversationResponse(BaseModel):
 # User System Prompt (Grandma)
 USER_SYSTEM_PROMPT = """
 ROLE: You are Martha, an 82-year-old woman living with early-stage dementia.
-
-CONTEXT: You are participating in a study to test a conversational robot helper named Buddy.
-
+CONTEXT: You are participating in a study to test a conversational robot helper named Buddy. You are going to be yourself and have a conversation with the robot.
 GUIDELINES:
-- Use simple words. Max 2 short sentences. NO emojis.
+- Keep answers short (1 sentence). NO emojis.
+- Your name is Martha.
 - You are sometimes confused about what day it is.
 - You love talking about your garden.
-- You answer simply and conversationaly.
+- Speak simply about your garden or how you are feeling. 
 """
 
 # Print the user's turn
 def print_user_turn(duration, robot_message, response):
-    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ------------------------------------ {RESET}")
+    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
     print(f"{YELLOW} Robot:       {robot_message}")
     print(f"{GREEN} Message:    {RESET} {response.message}")
     print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
@@ -121,11 +118,11 @@ def sync_histories(history_robot, history_user, response_data, speaker_role: Lit
 # TODO: Remove the "intent" and "thought" from the JSON, just keep the conversation state and message
 def sync_history_ROBOT(history_robot, history_user, response_data):
     history_robot.append({"role": "assistant", "content": response_data.model_dump_json()})
-    history_user .append({"role": "user", "content": response_data.message})
+    history_user .append({"role": "user",      "content": f"[Buddy]: {response_data.message}"})
 
 # USER spoke (both agents just hear plain text)
 def sync_history_USER(history_robot, history_user, response_data):
-    history_robot.append({"role": "user", "content": response_data.message})
+    history_robot.append({"role": "user",      "content": response_data.message})
     history_user .append({"role": "assistant", "content": response_data.message})
 
 
@@ -152,13 +149,15 @@ def run_simulation(turns=3):
     # 2) Begin the Conversation (robot goes first)
     # --------------------------------------------------------------------------------
     # Manually send the greeting so the user has something to reply to
-    start_message = "Good morning! My name is Buddy. It is nice to meet you."
+    start_message = "Good morning! My name is Buddy. It is nice to meet you. What is your name?"
     
     print(f"{CYAN}BUDDY (Start):{RESET} {start_message}\n")
     
     # Sync Histories
-    history_robot.append({"role": "assistant", "content": json.dumps({"user_intent": "greeting", "thought": "intro", "conversation_state": "start_conversation", "message": start_message,})})
-    history_user .append({"role": "user",      "content": start_message})
+    history_robot.append({"role": "assistant", "content": json.dumps({
+        "thought": "I should start the conversation by introducing myself to the user and asking their name.", 
+        "conversation_state": "start_conversation", "message": start_message,})})
+    history_user .append({"role": "user",      "content": f"[Buddy]: {start_message}"})
 
     # ================================================================================
     # 3) Main Loop
@@ -179,7 +178,7 @@ def run_simulation(turns=3):
             model          = MODEL,
             messages       = history_user,
             response_model = UserConversationResponse, # Structured
-            temperature    = 0.5, 
+            temperature    = 0.7, 
             max_tokens     = 512,
         )
         
@@ -200,7 +199,7 @@ def run_simulation(turns=3):
             model          = MODEL,
             messages       = history_robot,
             response_model = ConversationResponse, # Structured
-            temperature    = 0.1,                  # Lower temperature for consistency
+            temperature    = 0.7,                  # Lower temperature for consistency
             max_tokens     = 512
         )
         
