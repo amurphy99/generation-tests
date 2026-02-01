@@ -66,7 +66,7 @@ Respond ONLY with a valid JSON object.
 
 # Print the robots turn
 def print_robot_turn(duration, user_message, response):
-    print(f"{CYAN} --- ROBOT RESPONSE ({duration:.2f}s) ------------------------- {RESET}")
+    print(f"{CYAN} --- ROBOT RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
     print(f"{YELLOW} User:        {user_message}")
     print(f"{GREEN} Intent:     {RESET} {response.user_intent}")
     print(f"{GREEN} Thought:    {RESET} {response.thought}")
@@ -97,7 +97,7 @@ GUIDELINES:
 
 # Print the user's turn
 def print_user_turn(duration, robot_message, response):
-    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) -------------------------- {RESET}")
+    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ------------------------------------ {RESET}")
     print(f"{YELLOW} Robot:       {robot_message}")
     print(f"{GREEN} Message:    {RESET} {response.message}")
     print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
@@ -110,6 +110,7 @@ def print_user_turn(duration, robot_message, response):
 # Update both histories whenever a new message comes in
 def sync_histories(history_robot, history_user, response_data, speaker_role: Literal["ROBOT", "USER"]):
     """
+    **If you spoke & the history belongs to you => you are the assistant.**
     - Robot stores its own JSON but only hears plain text from User.
     - User only stores plain text for both its own and the robots responses
     """
@@ -120,12 +121,12 @@ def sync_histories(history_robot, history_user, response_data, speaker_role: Lit
 # TODO: Remove the "intent" and "thought" from the JSON, just keep the conversation state and message
 def sync_history_ROBOT(history_robot, history_user, response_data):
     history_robot.append({"role": "assistant", "content": response_data.model_dump_json()})
-    history_user .append({"role": "assistant", "content": response_data.message})
+    history_user .append({"role": "user", "content": response_data.message})
 
 # USER spoke (both agents just hear plain text)
 def sync_history_USER(history_robot, history_user, response_data):
     history_robot.append({"role": "user", "content": response_data.message})
-    history_user .append({"role": "user", "content": response_data.message})
+    history_user .append({"role": "assistant", "content": response_data.message})
 
 
 # ================================================================================
@@ -157,7 +158,7 @@ def run_simulation(turns=3):
     
     # Sync Histories
     history_robot.append({"role": "assistant", "content": json.dumps({"user_intent": "greeting", "thought": "intro", "conversation_state": "start_conversation", "message": start_message,})})
-    history_user .append({"role": "assistant", "content": start_message})
+    history_user .append({"role": "user",      "content": start_message})
 
     # ================================================================================
     # 3) Main Loop
@@ -170,7 +171,7 @@ def run_simulation(turns=3):
         # --------------------------------------------------------------------------------
         # a) USER Speaks
         # --------------------------------------------------------------------------------
-        print(f"{MAGENTA}[USER] Sending request...{RESET}")
+        print(f"{MAGENTA} [USER] Sending request...{RESET}")
         t0 = time.time()
         
         # User thinks based on Robot's last message
@@ -191,7 +192,7 @@ def run_simulation(turns=3):
         # --------------------------------------------------------------------------------
         # b) ROBOT Speaks
         # --------------------------------------------------------------------------------
-        print(f"{CYAN}[ROBOT] Sending request...{RESET}")
+        print(f"{CYAN} [ROBOT] Sending request...{RESET}")
         t0 = time.time()
         
         # Robot thinks based on User's message
@@ -222,7 +223,7 @@ print(f"{YELLOW}Attempting connection to: {LLM_URL}...{RESET}")
 print(f"{YELLOW}Model endpoint: {MODEL} {RESET}\n")
 
 try:
-    run_simulation(turns=3)
+    run_simulation(turns=10)
 
 except Exception as e:
     print(f"\n{CYAN}--- CONNECTION ERROR ---{RESET}")
