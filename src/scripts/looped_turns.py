@@ -28,7 +28,6 @@ LLM_KEY = os.getenv("LLM_KEY", "TOKEN")
 # Options: phi3-buddy | phi3.5-mini | qwen2.5-3b | qwen2.5-3b-speculative | qwen2.5-0.5b
 MODEL = "phi3.5-mini" 
 
-
 # ================================================================================
 # [ROBOT] Pydantic Model & System Prompt
 # ================================================================================
@@ -42,7 +41,6 @@ class ConversationResponse(BaseModel):
     
     # Draft response
     message: str = Field(..., description="The spoken response to the user.")
-
 
 # Robot System Prompt TODO: Change this to pull from the .json file
 ROBOT_SYSTEM_PROMPT = """
@@ -68,13 +66,13 @@ Respond ONLY with a valid JSON object.
 
 # Print the robots turn
 def print_robot_turn(duration, user_message, response):
-    print(f"{CYAN}--- ROBOT RESPONSE ({duration:.2f}s) ---{RESET}")
-    print(f"{YELLOW}User:        {user_message}")
-    print(f"{GREEN}Intent:     {RESET} {response.user_intent}")
-    print(f"{GREEN}Thought:    {RESET} {response.thought}")
-    print(f"{GREEN}State:      {RESET} {response.conversation_state}")
-    print(f"{GREEN}Message:    {RESET} {response.message}")
-    print(f"{CYAN}-------------------------------{RESET}\n")
+    print(f"{CYAN} --- ROBOT RESPONSE ({duration:.2f}s) ------------------------- {RESET}")
+    print(f"{YELLOW} User:        {user_message}")
+    print(f"{GREEN} Intent:     {RESET} {response.user_intent}")
+    print(f"{GREEN} Thought:    {RESET} {response.thought}")
+    print(f"{GREEN} State:      {RESET} {response.conversation_state}")
+    print(f"{GREEN} Message:    {RESET} {response.message}")
+    print(f"{CYAN} -------------------------------------------------------------- {RESET}\n")
 
 # ================================================================================
 # [USER] Pydantic Model & System Prompt
@@ -99,10 +97,12 @@ GUIDELINES:
 
 # Print the user's turn
 def print_user_turn(duration, robot_message, response):
-    print(f"{MAGENTA}--- USER RESPONSE ({duration:.2f}s) ---{RESET}")
-    print(f"{YELLOW}Robot:        {robot_message}")
-    print(f"{GREEN}Message:    {RESET} {response.message}")
-    print(f"{MAGENTA}-------------------------------{RESET}\n")
+    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) -------------------------- {RESET}")
+    print(f"{YELLOW} Robot:       {robot_message}")
+    print(f"{GREEN} Message:    {RESET} {response.message}")
+    print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
+
+
 
 # --------------------------------------------------------------------------------
 # Helpers
@@ -145,7 +145,7 @@ def run_simulation(turns=3):
 
     # Separate histories (user doesn't know about robots thought processes & vice versa)
     history_robot = [{"role": "system", "content": ROBOT_SYSTEM_PROMPT}]
-    history_user  = [{"role": "system", "content": USER_SYSTEM_PROMPT}]
+    history_user  = [{"role": "system", "content":  USER_SYSTEM_PROMPT}]
 
     # --------------------------------------------------------------------------------
     # 2) Begin the Conversation (robot goes first)
@@ -165,7 +165,7 @@ def run_simulation(turns=3):
     last_robot_message = start_message
 
     for i in range(turns):
-        print(f"{WHITE}======== Turn {i+1} ========{RESET}")
+        print(f"{WHITE}================ Turn {i+1} ================ {RESET}\n")
 
         # --------------------------------------------------------------------------------
         # a) USER Speaks
@@ -187,7 +187,6 @@ def run_simulation(turns=3):
 
         # Sync histories
         sync_histories(history_robot, history_user, user_response, speaker_role="USER")
-
 
         # --------------------------------------------------------------------------------
         # b) ROBOT Speaks
@@ -216,13 +215,11 @@ def run_simulation(turns=3):
         # Sleep for readability
         time.sleep(1)
 
-
 # --------------------------------------------------------------------------------
 # Server Calls
 # --------------------------------------------------------------------------------
 print(f"{YELLOW}Attempting connection to: {LLM_URL}...{RESET}")
 print(f"{YELLOW}Model endpoint: {MODEL} {RESET}\n")
-
 
 try:
     run_simulation(turns=3)
@@ -230,6 +227,3 @@ try:
 except Exception as e:
     print(f"\n{CYAN}--- CONNECTION ERROR ---{RESET}")
     print(f"{e}")
-
-
-
