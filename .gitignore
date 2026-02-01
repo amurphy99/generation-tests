@@ -6,3 +6,4 @@
 
 # Env files
 .env
+src/instructions.json
