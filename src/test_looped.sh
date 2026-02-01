@@ -122,13 +122,13 @@ Respond ONLY with a valid JSON object.
 
 # Print the robots turn
 def print_robot_turn(duration, user_message, response):
-    print(f"{CYAN}--- ROBOT RESPONSE ({duration:.2f}s) ---{RESET}")
-    print(f"{YELLOW}User:        {user_message}")
-    print(f"{GREEN}Intent:     {RESET} {response.user_intent}")
-    print(f"{GREEN}Thought:    {RESET} {response.thought}")
-    print(f"{GREEN}State:      {RESET} {response.conversation_state}")
-    print(f"{GREEN}Message:    {RESET} {response.message}")
-    print(f"{CYAN}-------------------------------{RESET}\n")
+    print(f"{CYAN} --- ROBOT RESPONSE ({duration:.2f}s) ------------------------- {RESET}")
+    print(f"{YELLOW} User:        {user_message}")
+    print(f"{GREEN} Intent:     {RESET} {response.user_intent}")
+    print(f"{GREEN} Thought:    {RESET} {response.thought}")
+    print(f"{GREEN} State:      {RESET} {response.conversation_state}")
+    print(f"{GREEN} Message:    {RESET} {response.message}")
+    print(f"{CYAN} -------------------------------------------------------------- {RESET}\n")
 
 # ================================================================================
 # [USER] Pydantic Model & System Prompt
@@ -153,10 +153,12 @@ GUIDELINES:
 
 # Print the user's turn
 def print_user_turn(duration, robot_message, response):
-    print(f"{MAGENTA}--- USER RESPONSE ({duration:.2f}s) ---{RESET}")
-    print(f"{YELLOW}Robot:        {robot_message}")
-    print(f"{GREEN}Message:    {RESET} {response.message}")
-    print(f"{MAGENTA}-------------------------------{RESET}\n")
+    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) -------------------------- {RESET}")
+    print(f"{YELLOW} Robot:       {robot_message}")
+    print(f"{GREEN} Message:    {RESET} {response.message}")
+    print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
+
+
 
 # --------------------------------------------------------------------------------
 # Helpers
@@ -181,6 +183,7 @@ def sync_history_USER(history_robot, history_user, response_data):
     history_robot.append({"role": "user", "content": response_data.message})
     history_user .append({"role": "user", "content": response_data.message})
 
+
 # ================================================================================
 # Loop Function
 # ================================================================================
@@ -198,7 +201,7 @@ def run_simulation(turns=3):
 
     # Separate histories (user doesn't know about robots thought processes & vice versa)
     history_robot = [{"role": "system", "content": ROBOT_SYSTEM_PROMPT}]
-    history_user  = [{"role": "system", "content": USER_SYSTEM_PROMPT}]
+    history_user  = [{"role": "system", "content":  USER_SYSTEM_PROMPT}]
 
     # --------------------------------------------------------------------------------
     # 2) Begin the Conversation (robot goes first)
@@ -218,7 +221,7 @@ def run_simulation(turns=3):
     last_robot_message = start_message
 
     for i in range(turns):
-        print(f"{WHITE}======== Turn {i+1} ========{RESET}")
+        print(f"{WHITE}================ Turn {i+1} ================ {RESET}\n")
 
         # --------------------------------------------------------------------------------
         # a) USER Speaks
@@ -275,11 +278,12 @@ print(f"{YELLOW}Attempting connection to: {LLM_URL}...{RESET}")
 print(f"{YELLOW}Model endpoint: {MODEL} {RESET}\n")
 
 try:
-    run_simulation(turns=5)
+    run_simulation(turns=3)
 
 except Exception as e:
     print(f"\n{CYAN}--- CONNECTION ERROR ---{RESET}")
     print(f"{e}")
+
 EOF
 
 # ================================================================================
