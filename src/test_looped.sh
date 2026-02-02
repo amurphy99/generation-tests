@@ -95,7 +95,7 @@ class ConversationResponse(BaseModel):
     conversation_state: Literal["start_conversation", "initiate_smalltalk", "explore_user_interests", "initiate_memory_activity", "discuss_memory_activity_topic"]
     
     # Draft response
-    message: str = Field(..., description="The spoken response to the user.")
+    message: str = Field(..., description="Your spoken response to the user.")
 
 # Robot System Prompt TODO: Change this to pull from the .json file
 ROBOT_SYSTEM_PROMPT = """
@@ -103,20 +103,18 @@ ROLE: You are Buddy, a warm, friendly robot built by Indiana University. You lov
 
 GUIDELINES:
 1. STYLE: Use simple words. Max 2 short sentences. NO emojis.
-2. EMPATHY: Validate feelings first.
 3. CLARITY: If the user is unclear, repeat their words as a question.
-4. FLOW: Engage with the user. ALWAYS end with a simple follow-up question.
-5. SAFETY: Do NOT give medical advice. The user CANNOT see your internal JSON or code.
+4. FLOW: You must earn the user's trust. Do not rush.
 
 CONVERSATION_STATE LOGIC:
-- "start_conversation": The very first greeting.
-- "initiate_smalltalk": Asking general questions (How are you? What do you like?).
-- "explore_user_interests": When the user mentions ANY interest (gardening, family, weather), move here.
-- "initiate_memory_activity": After exploring the user's interest, transition toward starting a memory activity where you discuss a related event/aspect from the user's past.
-- "discuss_memory_activity_topic": Discussing the details of that memory.
+- "start_conversation": The initial greeting.
+- "initiate_smalltalk": Ask general questions (weather, day, feelings). STAY HERE until the user gives more than a few word answer.
+- "explore_user_interests": ONLY move here if the user explicitly mentions a hobby or interest (old job, family, etc.).
+- "initiate_memory_activity": ONLY move here after you have discussed an interest for at least 2 turns.
+- "discuss_memory_activity_topic": Deep dive into the memory.
 
-OUTPUT FORMAT:
-Respond ONLY with a valid JSON object.
+CRITICAL INSTRUCTION:
+If the user's answer is short, DO NOT ADVANCE. Stay in "initiate_smalltalk" and ask a different open-ended question.
 """
 
 # Print the robots turn
@@ -133,25 +131,59 @@ def print_robot_turn(duration, user_message, response):
 # ================================================================================
 # TODO: Maybe could add adaptions to make it more like their thought during the demos? (e.g., trying to figure out the robots limits)
 class UserConversationResponse(BaseModel):
-    #thought: str = Field(..., description="Brief internal reasoning about the robot's intent and how to reply.")
-    message: str = Field(..., description="The spoken response to the robot.")
+    thought: str = Field(..., description="Brief internal reasoning about how to reply.")
+    message: str = Field(..., description="Your spoken response to the robot.")
 
 # User System Prompt (Grandma)
 USER_SYSTEM_PROMPT = """
-ROLE: You are Martha, an 82-year-old woman living with early-stage dementia.
-CONTEXT: You are participating in a study to test a conversational robot helper named Buddy. You are going to be yourself and have a conversation with the robot.
+ROLE: You are Martha, an 82-year-old HUMAN woman living with dementia.
+
+CONTEXT: 
+- You are participating in a study with the university of Indiana.
+- You were asked to have a conversation with the robot in front of you.
+
+PERSONALITY & MEMORIES:
+- You are polite but slightly confused.
+- You are a retired Librarian.
+- You like to garden.
+
 GUIDELINES:
-- Keep answers short (1 sentence). NO emojis.
-- Your name is Martha.
-- You are sometimes confused about what day it is.
-- You love talking about your garden.
-- Speak simply about your garden or how you are feeling. 
+- Use simple words. Max 2 short sentences. NO emojis.
+- Remember you are in a study, but you are easily distracted by your own worries.
+
+### EXAMPLES (Follow this style):
+
+Input: [Buddy]: Hello! Nice to meet you! What is your name?
+Response: {
+    "thought": "This robot is cute, I should ask it if it has a name.",
+    "message": "Hello there. My name is Martha, what is your name?"
+}
+
+Input: [Buddy]: My name is Buddy, thank you for asking! How are you doing today?
+Response: {
+    "thought": "It is asking about my day. I can't really think of anything specific. I will just answer with what is on my mind.",
+    "message": "I am doing alright, I suppose. My grandson was supposed to call later this afternoon."
+}
+
+Input: [Buddy]: Tell me about your cat. What is he like?
+Response: {
+    "thought": "The robot wants to know about Whiskers.",
+    "message": "He is a big orange tabby cat. I have had him for I don't know how long... He is always getting into trouble though!"
+}
+
+Input: [Buddy]: That's wonderful to hear! Gardens can be so peaceful and rewarding. Do you have a favorite flower or plant that you tend to?
+Response: {
+    "thought": "Buddy wants to know more about my garden and the specific plants in it.",
+    "message": "I particularly enjoy roses, they bring me joy."
+}
 """
+
 
 # Print the user's turn
 def print_user_turn(duration, robot_message, response):
     print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
     print(f"{YELLOW} Robot:       {robot_message}")
+    print(f"{GREEN} Thought:    {RESET} {response.thought}")
     print(f"{GREEN} Message:    {RESET} {response.message}")
     print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
 
@@ -174,12 +206,12 @@ def sync_histories(history_robot, history_user, response_data, speaker_role: Lit
 # TODO: Remove the "intent" and "thought" from the JSON, just keep the conversation state and message
 def sync_history_ROBOT(history_robot, history_user, response_data):
     history_robot.append({"role": "assistant", "content": response_data.model_dump_json()})
-    history_user .append({"role": "user",      "content": f"[Buddy]: {response_data.message}"})
+    history_user .append({"role": "user",      "content": "[Buddy]:" + response_data.message})
 
 # USER spoke (both agents just hear plain text)
 def sync_history_USER(history_robot, history_user, response_data):
     history_robot.append({"role": "user",      "content": response_data.message})
-    history_user .append({"role": "assistant", "content": response_data.message})
+    history_user .append({"role": "assistant", "content": response_data.model_dump_json()})
 
 
 # --------------------------------------------------------------------------------
@@ -229,10 +261,10 @@ def run_simulation(turns=3):
     print(f"{CYAN}BUDDY (Start):{RESET} {start_message}\n")
     
     # Sync Histories
-    history_robot.append({"role": "assistant", "content": json.dumps({
-        "thought": "I should start the conversation by introducing myself to the user and asking their name.", 
-        "conversation_state": "start_conversation", "message": start_message,})})
-    history_user .append({"role": "user",      "content": f"[Buddy]: {start_message}"})
+    history_user .append({"role": "user",      "content": "[Buddy]:" + start_message})
+    history_robot.append({"role": "assistant", "content": 
+                          json.dumps({"thought": "I should start the conversation by introducing myself to the user and asking their name.", 
+                                      "conversation_state": "start_conversation", "message": start_message,})})
 
     # ================================================================================
     # 3) Main Loop
@@ -251,7 +283,7 @@ def run_simulation(turns=3):
         # User thinks based on Robot's last message
         user_response = client.chat.completions.create(
             model          = MODEL,
-            messages       = get_sliding_context(history_user, MEMORY_WINDOW),
+            messages       = get_sliding_context(history_user, MEMORY_WINDOW-1),
             response_model = UserConversationResponse, # Structured
             temperature    = 0.7, 
             max_tokens     = 512,
