@@ -82,7 +82,7 @@ LLM_KEY = os.getenv("LLM_KEY", "TOKEN")
 
 # MODEL SELECTION
 # Options: phi3-buddy | phi3.5-mini | qwen2.5-3b | qwen2.5-3b-speculative | qwen2.5-0.5b
-MODEL = "phi3.5-mini" 
+MODEL = "qwen2.5-3b" 
 
 # ================================================================================
 # [ROBOT] Pydantic Model & System Prompt
@@ -157,9 +157,9 @@ def print_user_turn(duration, robot_message, response):
 
 
 
-# --------------------------------------------------------------------------------
+# ================================================================================
 # Helpers
-# --------------------------------------------------------------------------------
+# ================================================================================
 # Update both histories whenever a new message comes in
 def sync_histories(history_robot, history_user, response_data, speaker_role: Literal["ROBOT", "USER"]):
     """
@@ -180,6 +180,25 @@ def sync_history_ROBOT(history_robot, history_user, response_data):
 def sync_history_USER(history_robot, history_user, response_data):
     history_robot.append({"role": "user",      "content": response_data.message})
     history_user .append({"role": "assistant", "content": response_data.message})
+
+
+# --------------------------------------------------------------------------------
+# Get a Context Window of the History
+# --------------------------------------------------------------------------------
+# 10 messages = 5 turns of "User said / Robot said"
+MEMORY_WINDOW = 8
+
+def get_sliding_context(full_history, window_size):
+    """ Returns: [System Prompt] + [Last N Messages] """
+    # Always get the System Prompt (Index 0)
+    system_prompt = full_history[0]
+    
+    # Get last N messages from the conversation log (everything besides the system prompt)
+    conversation_log = full_history[1:]
+    recent_memory    = conversation_log[-window_size:]
+    
+    # Return the system prompt + recent messages
+    return [system_prompt] + recent_memory
 
 
 # ================================================================================
@@ -232,7 +251,7 @@ def run_simulation(turns=3):
         # User thinks based on Robot's last message
         user_response = client.chat.completions.create(
             model          = MODEL,
-            messages       = history_user,
+            messages       = get_sliding_context(history_user, MEMORY_WINDOW),
             response_model = UserConversationResponse, # Structured
             temperature    = 0.7, 
             max_tokens     = 512,
@@ -253,7 +272,7 @@ def run_simulation(turns=3):
         # Robot thinks based on User's message
         robot_response = client.chat.completions.create(
             model          = MODEL,
-            messages       = history_robot,
+            messages       = get_sliding_context(history_robot, MEMORY_WINDOW),
             response_model = ConversationResponse, # Structured
             temperature    = 0.7,                  # Lower temperature for consistency
             max_tokens     = 512
