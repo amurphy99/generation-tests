@@ -150,7 +150,7 @@ def sync_histories(history_robot, history_user, response_data, speaker_role: Lit
 # TODO: Remove the "intent" and "thought" from the JSON, just keep the conversation state and message
 def sync_history_ROBOT(history_robot, history_user, response_data):
     history_robot.append({"role": "assistant", "content": response_data.model_dump_json()})
-    history_user .append({"role": "user",      "content": "[Buddy]:" + response_data.message})
+    history_user .append({"role": "user",      "content": f"[Buddy]: {response_data.message}"})
 
 # USER spoke (both agents just hear plain text)
 def sync_history_USER(history_robot, history_user, response_data):
@@ -205,7 +205,7 @@ def run_simulation(turns=3):
     print(f"{CYAN}BUDDY (Start):{RESET} {start_message}\n")
     
     # Sync Histories
-    history_user .append({"role": "user",      "content": "[Buddy]:" + start_message})
+    history_user .append({"role": "user",      "content": f"[Buddy]: {start_message}"})
     history_robot.append({"role": "assistant", "content": 
                           json.dumps({"thought": "I should start the conversation by introducing myself to the user and asking their name.", 
                                       "conversation_state": "start_conversation", "message": start_message,})})
