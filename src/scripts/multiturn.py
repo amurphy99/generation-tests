@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import json
 import instructor
@@ -116,14 +117,12 @@ class ScenarioResponse(BaseModel):
     next_scenario: str = Field(..., description="Scenario name to use for the next turn.")
 
 # --------------------------------------------------------------------------------
-# Helpers (NEW)
+# Helpers
 # --------------------------------------------------------------------------------
 def validate_next_scenario(next_scenario: str, allowed: set[str], current: str) -> tuple[bool, str]:
     """Validate next_scenario against allowed set; return (ok, error_message)."""
-    if next_scenario == current:
-        return True, ""
-    if next_scenario in allowed:
-        return True, ""
+    if next_scenario == current: return True, ""
+    if next_scenario in allowed: return True, ""
     return False, f'next_scenario="{next_scenario}" is not in allowed scenarios (or current scenario).'
 
 def print_history(messages: list[dict]):
@@ -136,7 +135,7 @@ def print_history(messages: list[dict]):
         print(f"  - {role}: {content}")
 
 # --------------------------------------------------------------------------------
-# Get a response from the LLM (CHANGED: now accepts full messages list)
+# Get a response from the LLM 
 # --------------------------------------------------------------------------------
 def get_response(client, *, system_prompt: str, messages: list[dict], allowed_scenarios: set[str], current_scenario: str, label: str):
     print(f"{CYAN}Sending request...{RESET} {YELLOW}({label}){RESET}")
@@ -172,9 +171,9 @@ def get_response(client, *, system_prompt: str, messages: list[dict], allowed_sc
         print(f"{CYAN}--- ERROR ---{RESET}")
         print(f"{e}\n")
 
-# --------------------------------------------------------------------------------
+# ================================================================================
 # Main
-# --------------------------------------------------------------------------------
+# ================================================================================
 print(f"{YELLOW}Attempting connection to: {llm_url}...{RESET}")
 print(f"{YELLOW}Model endpoint: {MODEL}{RESET}")
 print(f"{YELLOW}Instructions file: {INSTRUCTIONS_JSON_PATH}{RESET}")
