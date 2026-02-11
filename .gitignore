@@ -7,3 +7,6 @@
 # Env files
 .env
 src/instructions.json
+
+# Files
+split_model.py
