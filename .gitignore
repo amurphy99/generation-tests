@@ -10,3 +10,15 @@ src/instructions.json
 
 # Files
 split_model.py
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Code
+*.ipynb_checkpoints
+*.pyc
+
+# Notebooks
+notebooks/*
+!notebooks/README.md

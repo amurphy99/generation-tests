@@ -13,42 +13,42 @@ from openai import OpenAI
 # Configuration
 # --------------------------------------------------------------------------------
 # Colors
-GREY     = '\033[90m'
-RED      = '\033[91m'
-GREEN    = '\033[92m'
-YELLOW   = '\033[93m'
-BLUE     = '\033[94m'
-MAGENTA  = '\033[95m'
-CYAN     = '\033[96m'
-WHITE    = '\033[97m'
-RESET    = '\033[0m'
+GREY     = "\033[90m"
+RED      = "\033[91m"
+GREEN    = "\033[92m"
+YELLOW   = "\033[93m"
+BLUE     = "\033[94m"
+MAGENTA  = "\033[95m"
+CYAN     = "\033[96m"
+WHITE    = "\033[97m"
+RESET    = "\033[0m"
 
 # Extended Colors
-ORANGE       = '\033[38;5;208m'
-PINK         = '\033[38;5;205m'
-TEAL         = '\033[38;5;51m'
-GOLD         = '\033[38;5;220m'
-PURPLE       = '\033[38;5;93m'
-LIME         = '\033[38;5;154m'
-SKY_BLUE     = '\033[38;5;39m'
+ORANGE       = "\033[38;5;208m"
+PINK         = "\033[38;5;205m"
+TEAL         = "\033[38;5;51m"
+GOLD         = "\033[38;5;220m"
+PURPLE       = "\033[38;5;93m"
+LIME         = "\033[38;5;154m"
+SKY_BLUE     = "\033[38;5;39m"
 
 # Standard (Dark) Colors
-BLACK_STD    = '\033[30m'
-RED_STD      = '\033[31m'
-GREEN_STD    = '\033[32m'
-YELLOW_STD   = '\033[33m'
-BLUE_STD     = '\033[34m'
-MAGENTA_STD  = '\033[35m'
-CYAN_STD     = '\033[36m'
-WHITE_STD    = '\033[37m'
+BLACK_STD    = "\033[30m"
+RED_STD      = "\033[31m"
+GREEN_STD    = "\033[32m"
+YELLOW_STD   = "\033[33m"
+BLUE_STD     = "\033[34m"
+MAGENTA_STD  = "\033[35m"
+CYAN_STD     = "\033[36m"
+WHITE_STD    = "\033[37m"
 
 # Formatting
-BOLD         = '\033[1m'
-DIM          = '\033[2m'
-ITALIC       = '\033[3m'
-UNDERLINE    = '\033[4m'
-BLINK        = '\033[5m'
-REVERSE      = '\033[7m'
+BOLD         = "\033[1m"
+DIM          = "\033[2m"
+ITALIC       = "\033[3m"
+UNDERLINE    = "\033[4m"
+BLINK        = "\033[5m"
+REVERSE      = "\033[7m"
 
 
 # LLM access
