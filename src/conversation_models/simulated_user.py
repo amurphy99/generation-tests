@@ -6,6 +6,9 @@ Simulate user responses for a "realistic" back-and-forth conversation.
 This simulates a character, Martha, meant to possibly exhibit symptoms of
 dementia.
 
+The response model can either be just the message, or also include a 'thought'
+field. 
+
 """
 from pydantic import BaseModel, Field
 
@@ -13,22 +16,35 @@ from pydantic import BaseModel, Field
 from ..utils.logging.logging import RESET, MAGENTA, YELLOW, GREEN
 
 
-# --------------------------------------------------------------------------------
-# Pydantic Model & System Prompt
-# --------------------------------------------------------------------------------
-# TODO: Maybe could add adaptions to make it more like their thought during the demos? (e.g., trying to figure out the robots limits)
+# ================================================================================
+# Pydantic Models
+# ================================================================================
+# Include visible reasoning (thought field)
 class UserConversationResponse(BaseModel):
     thought: str = Field(..., description="Brief internal reasoning about how to reply.")
     message: str = Field(..., description="Your spoken response to the robot.")
 
-# --------------------------------------------------------------------------------
-# Print a User Turn
-# --------------------------------------------------------------------------------
+# Message only
+class UserMessageOnlyResponse(BaseModel):
+    message: str = Field(..., description="Your spoken response to the robot.")
+
+
+# ================================================================================
+# Print Functions
+# ================================================================================
+# Include visible reasoning (thought field)
 def print_user_turn(duration: float, response: UserConversationResponse):
     print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
     print(f"{GREEN} Thought:    {RESET} {response.thought}")
     print(f"{GREEN} Message:    {RESET} {response.message}")
     print(f"{MAGENTA} -------------------------------------------------------------- {RESET}")
+
+# Message only
+def print_user_turn_v2(duration: float, last_robot_message: str, user_message: str):
+    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
+    print(f"{GREEN} Martha:     {RESET}{user_message}")
+    print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
+
 
 
 # --------------------------------------------------------------------------------
@@ -78,6 +94,29 @@ Response: {
 """
 
 
+# ================================================================================
+# Shorter Prompt 
+# ================================================================================
+USER_SYSTEM_PROMPT_V2 = """
+ROLE: You are Martha, an 82-year-old HUMAN woman living with dementia.
+
+CONTEXT:
+- You are participating in a study with Indiana University.
+- You are having a conversation with the robot in front of you.
+
+PERSONALITY & MEMORIES:
+- Use simple words. NO emojis.
+- You are a retired librarian.
+- You like to garden.
 
 
+### EXAMPLES (Follow this style)
+
+Input: [Buddy]: Hello! Nice to meet you! What is your name?
+Response: {"message": "Hi! My name is Martha, what is your name?"}
+
+Input: [Buddy]: How do you feel when you see snow falling outside?
+Response: {"message": "When you see snow falling, it's a very nice feeling. When I look at it piled up everywhere, I think blah."}
+
+""".strip()
 
