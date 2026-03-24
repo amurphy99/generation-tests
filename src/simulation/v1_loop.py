@@ -23,10 +23,10 @@ from ..utils.logging.logging import RESET, BOLD, UNBOLD, GREEN, CYAN, MAGENTA
 from ..utils.logging.utils   import print_banner, print_turn_header
 
 # Version-Specific Setup
+from ..conversation_models.simulated_user import UserConversationResponse, USER_SYSTEM_PROMPT, print_user_turn
 from ..conversation_models.buddy.models   import ConversationResponse
 from ..conversation_models.buddy.prompts  import ROBOT_SYSTEM_PROMPT
 from ..conversation_models.buddy.printing import print_robot_turn
-from ..conversation_models.simulated_user import UserConversationResponse, USER_SYSTEM_PROMPT, print_user_turn
 
 # Generation Utilities
 from  .config                  import SimulationConfig
@@ -76,7 +76,7 @@ def run_simulation(config: SimulationConfig):
         mode=instructor.Mode.JSON
     )
 
-    # Initialize "agents"
+    # Initialize agents
     robot_agent, user_agent = _make_agents(config)
 
     # Conversation histories (system prompts are handled by run_agent, not stored here)
@@ -106,10 +106,10 @@ def run_simulation(config: SimulationConfig):
     for i in range(1, config.turns + 1):
         print_turn_header(i)
 
-        # ------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------
         # a) User speaks
-        # ------------------------------------------------------------------------
-        print(f"{MAGENTA} [USER] Thinking...{RESET}")
+        # --------------------------------------------------------------------------------
+        print(f"{MAGENTA}[USER] Thinking...{RESET}")
         t0 = time.time()
 
         # User thinks based on Robot's last message
@@ -126,10 +126,10 @@ def run_simulation(config: SimulationConfig):
         # Sync histories
         sync_history_user(history_robot, history_user, user_response)
 
-        # ------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------
         # b) Robot speaks
-        # ------------------------------------------------------------------------
-        print(f"{CYAN} [ROBOT] Thinking...{RESET}")
+        # --------------------------------------------------------------------------------
+        print(f"{CYAN}[ROBOT] Thinking...{RESET}")
         t0 = time.time()
 
         # Robot thinks based on User's message
@@ -156,6 +156,6 @@ def run_simulation(config: SimulationConfig):
             f"{BOLD}{MAGENTA}Buddy:{UNBOLD} {robot_response.message}{RESET}\n"
         )
 
-        # Sleep for readability
+        # Wait a little bit between turns
         if config.sleep_s > 0: time.sleep(config.sleep_s)
 

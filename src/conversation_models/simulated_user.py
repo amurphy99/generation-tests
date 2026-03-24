@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 # From this project
 from ..utils.logging.logging import RESET, MAGENTA, YELLOW, GREEN
+from ..utils.logging.utils   import hr
 
 
 # ================================================================================
@@ -34,16 +35,16 @@ class UserMessageOnlyResponse(BaseModel):
 # ================================================================================
 # Include visible reasoning (thought field)
 def print_user_turn(duration: float, response: UserConversationResponse):
-    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
-    print(f"{GREEN} Thought:    {RESET} {response.thought}")
-    print(f"{GREEN} Message:    {RESET} {response.message}")
-    print(f"{MAGENTA} -------------------------------------------------------------- {RESET}")
+    print(f"{MAGENTA}--- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
+    print(f"{GREEN}Thought:    {RESET} {response.thought}")
+    print(f"{GREEN}Message:    {RESET} {response.message}")
+    print(f"{MAGENTA}{hr('-')} {RESET}")
 
 # Message only
 def print_user_turn_v2(duration: float, last_robot_message: str, user_message: str):
-    print(f"{MAGENTA} --- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
-    print(f"{GREEN} Martha:     {RESET}{user_message}")
-    print(f"{MAGENTA} -------------------------------------------------------------- {RESET}\n")
+    print(f"{MAGENTA}--- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
+    print(f"{GREEN}Martha:     {RESET}{user_message}")
+    print(f"{MAGENTA}{hr('-')} {RESET}\n")
 
 
 
