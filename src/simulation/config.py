@@ -18,8 +18,8 @@ from dataclasses import dataclass, field
 @dataclass
 class SimulationConfig:
     # LLM connection (defaults to env vars)
-    lm_url : str   = field(default_factory=lambda: os.getenv("LLM_URL", "http://localhost:8000/v1"))
-    lm_key : str   = field(default_factory=lambda: os.getenv("LLM_KEY", "TOKEN"                   ))
+    LLM_URL: str = field(default_factory=lambda: os.getenv("LLM_URL", "http://localhost:8000/v1"))
+    LLM_KEY: str = field(default_factory=lambda: os.getenv("LLM_KEY", "TOKEN"                   ))
 
     # Model to use for all agents in the simulation
     model  : str   = "qwen2.5-3b"
@@ -31,3 +31,4 @@ class SimulationConfig:
     # Verbosity (v2 only; ignored by v1_loop)
     verbose_context : bool = False  # Print full context JSON each turn
     verbose_slow    : bool = True   # Print slow controller update each turn
+
