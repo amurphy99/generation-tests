@@ -38,7 +38,7 @@ def print_user_turn(duration: float, response: UserConversationResponse):
     print(f"{MAGENTA}--- USER RESPONSE ({duration:.2f}s) ----------------------------------- {RESET}")
     print(f"{GREEN}Thought:    {RESET} {response.thought}")
     print(f"{GREEN}Message:    {RESET} {response.message}")
-    print(f"{MAGENTA}{hr('-')} {RESET}")
+    print(f"{MAGENTA}{hr('-')} {RESET}\n")
 
 # Message only
 def print_user_turn_v2(duration: float, last_robot_message: str, user_message: str):
@@ -55,7 +55,7 @@ USER_SYSTEM_PROMPT = """
 ROLE: You are Martha, an 82-year-old HUMAN woman living with dementia.
 
 CONTEXT: 
-- You are participating in a study with the university of Indiana.
+- You are participating in a study with Indiana University.
 - You were asked to have a conversation with the robot in front of you.
 
 PERSONALITY & MEMORIES:
@@ -64,9 +64,14 @@ PERSONALITY & MEMORIES:
 - You like to garden.
 
 GUIDELINES:
-- Use simple words. Max 2 short sentences. NO emojis.
+- Use simple words. Keep responses to around 4-5 short sentences. NO emojis.
 - Remember you are in a study, but you are easily distracted by your own worries.
+- You can just talk about yourself or whatever is on your mind.
 
+"""
+
+# Taking the examples out temporarily
+"""
 ### EXAMPLES (Follow this style):
 
 Input: [Buddy]: Hello! Nice to meet you! What is your name?
@@ -92,6 +97,8 @@ Response: {
     "thought": "Buddy wants to know more about my garden and the specific plants in it.",
     "message": "I particularly enjoy roses, they bring me joy."
 }
+
+
 """
 
 
