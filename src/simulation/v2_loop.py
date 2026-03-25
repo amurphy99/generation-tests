@@ -30,10 +30,9 @@ from ..utils.logging.utils   import print_banner, print_turn_header
 
 # Version-Specific Setup
 from ..conversation_models.simulated_user import UserConversationResponse, USER_SYSTEM_PROMPT, print_user_turn
-from ..conversation_models.buddy.models   import RobotFastReply, RobotSlowUpdate, ConversationState
 from ..conversation_models.buddy.context  import ConversationContext
+from ..conversation_models.buddy.models   import RobotFastReply, RobotSlowUpdate
 from ..conversation_models.buddy.prompts  import get_robot_fast_prompt, get_robot_slow_prompt
-from ..conversation_models.buddy          import context  as ctx       
 from ..conversation_models.buddy          import printing as pr
 
 # Generation Utilities
@@ -105,10 +104,8 @@ def run_simulation(config: SimulationConfig):
     # 2) Begin the Conversation (robot goes first)
     # --------------------------------------------------------------------------------
     # Initial State for the Robot
-    start_message  = "Good morning! My name is Buddy, it is nice to meet you. What is your name?"
-    context        = ctx.init_context_store()
-    current_state  : ConversationState = "initiate_smalltalk"
-    current_plan   = "Get the user's name and ask how they are doing."
+    start_message = "Good morning! My name is Buddy, it is nice to meet you. What is your name?"
+    context       = ConversationContext()
 
     # First message
     print(f"{CYAN}BUDDY (Start):{RESET} {start_message}\n")
@@ -126,7 +123,7 @@ def run_simulation(config: SimulationConfig):
         # --------------------------------------------------------------------------------
         # a) USER Speaks (Grandma)
         # --------------------------------------------------------------------------------
-        print(f"{MAGENTA}[USER] Thinking...{RESET}")
+        #print(f"{MAGENTA}[USER] Thinking...{RESET}")
         t0 = time.time()
 
         # API call for response
@@ -138,6 +135,7 @@ def run_simulation(config: SimulationConfig):
         )
 
         t1 = time.time()
+        user_time = t1 - t0
         print_user_turn(t1 - t0, user_response)
 
         # Update histories
@@ -149,11 +147,11 @@ def run_simulation(config: SimulationConfig):
         # b) Robot FAST reply (robot's spoken reply)
         # --------------------------------------------------------------------------------
         # We inject the OLD state/context into the prompt to generate the reply quickly
-        fast_context_text = ctx.render_context_for_fast(context)
-        fast_sys_prompt   = get_robot_fast_prompt(state=current_state, context_text=fast_context_text, plan=current_plan)
+        fast_context_text = context.to_fast_string()
+        fast_sys_prompt   = get_robot_fast_prompt(state=context.conversation_state, context_text=fast_context_text, plan=context.plan)
 
         # Print context
-        print(f"{CYAN}[ROBOT] Track 1: Generating reply...{RESET}")
+        #print(f"{CYAN}[ROBOT] Track 1: Generating reply...{RESET}")
         pr.print_fast_context(fast_context_text)
 
         # API call for response
@@ -164,7 +162,10 @@ def run_simulation(config: SimulationConfig):
             system_prompt = fast_sys_prompt,
             history       = history_robot,
         )
+
+        # Timing
         t1 = time.time()
+        r1_time = t1 - t0
 
         # Print message
         buddy_msg = robot_response.message.strip()
@@ -178,11 +179,11 @@ def run_simulation(config: SimulationConfig):
         # c) Robot SLOW controller update (state + deltas + plan)
         # --------------------------------------------------------------------------------
         # Now we think about what just happened to prepare for the NEXT turn
-        print(f"{BLUE} [ROBOT] Track 2: Updating state/context...{RESET}")
+        #print(f"{BLUE} [ROBOT] Track 2: Updating state/context...{RESET}")
 
         # Handling context
-        ctx_before      = ConversationContext.model_validate(context.model_dump())  # cheap snapshot copy
-        slow_sys_prompt = get_robot_slow_prompt(current_state=current_state, context_json=ctx.context_to_json(context))
+        ctx_before      = context.snapshot()  # cheap snapshot copy
+        slow_sys_prompt = get_robot_slow_prompt(current_state=context.conversation_state, context_json=context.to_json())
 
         # API call for response
         t0 = time.time()
@@ -192,28 +193,26 @@ def run_simulation(config: SimulationConfig):
             system_prompt = slow_sys_prompt,
             history       = history_robot,
         )
+
+        # Timing
         t1 = time.time()
+        r2_time = t1 = t0
 
         # Apply deltas first
-        context = ctx.apply_context_delta(context, slow_update.context_delta)
+        context.apply_delta(slow_update.context_delta)
 
-        # Gate state
-        proposed_state = slow_update.conversation_state
-        gated_state    = ctx.gate_state(current_state, proposed_state, context)
+        # Advance state (gate + counter update)
+        prev_state = context.conversation_state
+        context.advance_state(slow_update.conversation_state)
 
-        # Update state counter
-        ctx.update_turns_in_interest(current_state, gated_state, context)
-
-        # Commit internal state/plan for next loop
-        prev_state    = current_state
-        current_state = gated_state
-        current_plan  = slow_update.tentative_plan.strip()
+        # Commit plan for next loop
+        context.plan = slow_update.tentative_plan.strip()
 
         # --------------------------------------------------------------------------------
         # d) End-of-turn steps
         # --------------------------------------------------------------------------------
         if config.verbose_slow: pr.print_robot_slow(t1 - t0, prev_state, slow_update)
-        
+
         # Print just the replies
         print(
             f"\n"
@@ -222,8 +221,8 @@ def run_simulation(config: SimulationConfig):
         )
 
         # Print the updates this caused to the context
-        if config.verbose_context: pr.print_context_diff(ctx_before, context)
+        if config.verbose_context: context.print_diff(ctx_before)
+        print()
 
         # Wait a little bit between turns
         if config.sleep_s > 0: time.sleep(config.sleep_s)
-
