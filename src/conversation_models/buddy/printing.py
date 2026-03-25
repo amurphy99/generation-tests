@@ -8,7 +8,7 @@ Print responses from the robot
 from .models import ConversationResponse, RobotSlowUpdate, RobotFastReply
 
 # Style formatting
-from ...utils.logging.logging import RESET, DIM, WHITE, BRIGHT_BLUE, BLACK
+from ...utils.logging.logging import RESET, BOLD, DIM, ITALIC, BRIGHT_BLUE, BLACK
 from ...utils.logging.logging import CYAN, GREEN, RED, BLUE
 from ...utils.logging.utils   import hr
 
@@ -31,7 +31,7 @@ def print_robot_turn(duration: float, response: ConversationResponse):
 def print_robot_fast(duration: float, response: RobotFastReply):
     print(f"{CYAN}--- ROBOT FAST TRACK ({duration:.2f}s) --------------------------------- {RESET}")
     print(f"{GREEN}Message:    {RESET}{response.message}")
-    print(f"{CYAN} {hr('-')} {RESET}\n")
+    print(f"{CYAN}{hr('-')} {RESET}\n")
 
 # --------------------------------------------------------------------------------
 # ROBOT SLOW
@@ -55,4 +55,4 @@ def print_robot_slow(duration: float, old_state: str, slow_update: RobotSlowUpda
 
 # String context (formatted for the FAST reply model)
 def print_fast_context(context_text: str):
-    print(f"{RED}Context: {WHITE} {context_text}{RESET}")
+    print(f"{RED}{BOLD}Context:{RESET} {ITALIC}{context_text}{RESET}")

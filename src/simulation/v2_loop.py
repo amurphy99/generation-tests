@@ -118,7 +118,7 @@ def run_simulation(config: SimulationConfig):
     # 3) Main Loop
     # ================================================================================
     for t in range(1, config.turns + 1):
-        print_turn_header(t)
+        print_turn_header(t); print()
 
         # --------------------------------------------------------------------------------
         # a) USER Speaks (Grandma)
@@ -215,7 +215,6 @@ def run_simulation(config: SimulationConfig):
 
         # Print just the replies
         print(
-            f"\n"
             f"{BOLD}{GREEN  }User: {UNBOLD} { user_response.message}{RESET}\n"
             f"{BOLD}{MAGENTA}Buddy:{UNBOLD} {robot_response.message}{RESET}\n"
         )
