@@ -3,7 +3,7 @@ Simulate user responses for a "realistic" back-and-forth conversation.
 --------------------------------------------------------------------------------
 `src.conversation_models.simulated_user`
 
-This simulates a character, Martha, meant to possibly exhibit symptoms of
+This simulates a character, "Martha", meant to possibly exhibit symptoms of
 dementia.
 
 The response model can either be just the message, or also include a 'thought'

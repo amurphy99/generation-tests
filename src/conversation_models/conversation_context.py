@@ -21,7 +21,7 @@ from ..utils.logging.utils   import hr
 
 
 # ================================================================================
-# Long-term Context Storage (persistent across turns)
+# Long-Term Context Storage (persistent across turns)
 # ================================================================================
 class ContextData(BaseModel):
     # 1. Once the user introduced themselves
@@ -47,7 +47,7 @@ class ContextData(BaseModel):
 
 
 # ================================================================================
-# ConversationContext — wrapper class with all context-related methods
+# Wrapper class for all context-related methods
 # ================================================================================
 class ConversationContext:
     # Initialize with values for starting off the conversation

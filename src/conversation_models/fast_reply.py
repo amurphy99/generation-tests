@@ -3,8 +3,11 @@ Fast-reply response model that uses a given conversation context to reply.
 --------------------------------------------------------------------------------
 `src.conversation_models.fast_reply`
 
-Buddy's spoken reply -- generated quickly using the context and plan prepared
-by the slow controller in the previous turn.
+Buddy's spoken reply is generated using the context object and plan prepared by 
+the slow controller in the previous turn. Should be faster than the Context
+Manager model to keep the response turnaround below ~1.5 seconds.
+
+TODO: Add emotions or gestures here for the robots.
 
 """
 from pydantic import BaseModel, Field
@@ -80,6 +83,6 @@ RESPONSE PLAN: {plan}
 # ================================================================================
 def print_fast_reply(duration: float, response: FastReply) -> None:
     print(f"{CYAN}--- FAST REPLY ({duration:.2f}s) ---------------------------------------- {RESET}")
-    print(f"{GREEN}Thought:    {RESET}{response.thought}")
-    print(f"{GREEN}Message:    {RESET}{response.message}")
+    print(f"{GREEN}Thought:{RESET} {response.thought}")
+    print(f"{GREEN}Message:{RESET} {response.message}")
     print(f"{CYAN}{hr('-')} {RESET}\n")

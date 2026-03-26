@@ -96,8 +96,6 @@ class ContextManager(BaseModel):
     # --------------------------------------------------------------------------------
     # Conversation Advancement
     # --------------------------------------------------------------------------------
-
-
     # High-level plan for the response model to use for its next turn
     tentative_plan : str = Field(..., description=(
         "A brief suggestion to the fast reply model about how to advance the conversation next turn, "
@@ -160,9 +158,6 @@ CURRENT CONTEXT (JSON):
 """.strip()
 
 
-
-
-
 # ================================================================================
 # Print Function
 # ================================================================================
@@ -203,3 +198,4 @@ def _print_op(op: ContextOp) -> None:
     elif op.op == "update":
         old = json.dumps(op.old_value) if op.old_value else "?"
         print(f"  {YELLOW}[{tag}]{RESET} {field}: {RED}{old}{RESET} -> {GREEN}{json.dumps(op.value)}{RESET}")
+

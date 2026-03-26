@@ -1,5 +1,5 @@
 """
-V2 simulation loop — dual-track robot (fast reply + slow controller).
+V2 simulation loop -- dual-track robot (fast reply + slow controller).
 --------------------------------------------------------------------------------
 `src.simulation.v2_loop`
 
